@@ -37,7 +37,7 @@ class EuroCallPrice(nn.Cell):
 def get_data(iter_num, data_size, mean, std):
     for _ in range(iter_num):
         data = np.random.normal(mean, std, (data_size, ))
-        yield data.astype(np.float32)
+        yield (data.astype(np.float32), np.array([0.0]).astype(np.float32))
 
 
 def create_dataset(iter_num, data_size, mean, std, repeat_size=1, batch_size=1):
@@ -49,13 +49,19 @@ def create_dataset(iter_num, data_size, mean, std, repeat_size=1, batch_size=1):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='euro call options')
+    parser.add_argument('--device_target', type=str, default='Ascend', help='set which type of device you want to use. Ascend/GPU')
+    parser.add_argument('--device_id', default=1, type=int, help='device id is for physical devices')
+
+    args = parser.parse_args()
+
     m = 1000000
     spot = 276.10
     volatility = 0.407530933
     strike = 230
     maturity = 58 / 365
     std = np.sqrt(maturity)
-    context.set_context(device_target="Ascend", device_id=7)
+    context.set_context(device_target=args.device_target, device_id=args.device_id)
     x = np.random.normal(0.0, std, (m, ))
     
     model = EuroCallPrice(m, spot, volatility, strike, maturity)
@@ -66,8 +72,3 @@ if __name__ == '__main__':
         result = model(x)
         print(result)
         print(time.time() - start_ts)
-    # first = time.time()
-	# # r = estimate_call_price_ms(m, spot, volatility, strike, maturity)
-    # result = model(x)
-
-    print(time.time() - start_ts)
