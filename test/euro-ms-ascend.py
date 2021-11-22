@@ -5,13 +5,14 @@ import numpy as np
 import mindspore
 import mindspore.nn as nn
 from mindspore import Tensor
+import mindspore.dataset as ds
 
 import mindspore.ops as ops
 from mindspore import context
 
 class EuroCallPrice(nn.Cell):
     """
-    Lenet网络结构
+    网络结构
     """
     def __init__(self, m, spot, volatility, strike, maturity):
         super(EuroCallPrice, self).__init__()
@@ -33,6 +34,20 @@ class EuroCallPrice(nn.Cell):
         return result
 
 
+def get_data(iter_num, data_size, mean, std):
+    for _ in range(iter_num):
+        data = np.random.normal(mean, std, (data_size, ))
+        yield data.astype(np.float32)
+
+
+def create_dataset(iter_num, data_size, mean, std, repeat_size=1, batch_size=1):
+    """定义数据集"""
+    input_data = ds.GeneratorDataset(list(get_data(iter_num, data_size, mean, std)), column_names=['data'])
+    input_data = input_data.batch(batch_size)
+    input_data = input_data.repeat(repeat_size)
+    return input_data
+
+
 if __name__ == '__main__':
     m = 1000000
     spot = 276.10
@@ -42,12 +57,17 @@ if __name__ == '__main__':
     std = np.sqrt(maturity)
     context.set_context(device_target="Ascend", device_id=7)
     x = np.random.normal(0.0, std, (m, ))
-    start_ts = time.time()
+    
     model = EuroCallPrice(m, spot, volatility, strike, maturity)
-    result = model(x)
-    print(result)
-    first = time.time()
-	# r = estimate_call_price_ms(m, spot, volatility, strike, maturity)
-    result = model(x)
+    syn_data = create_dataset(3, m, 0.0, std)
+
+    for x in syn_data:
+        start_ts = time.time()
+        result = model(x)
+        print(result)
+        print(time.time() - start_ts)
+    # first = time.time()
+	# # r = estimate_call_price_ms(m, spot, volatility, strike, maturity)
+    # result = model(x)
 
     print(time.time() - start_ts)
