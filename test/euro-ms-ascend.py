@@ -22,7 +22,7 @@ class EuroCallPrice(nn.Cell):
         self.strike = strike
         self.maturity = maturity
 
-    def construct(self, x):
+    def construct(self):
         # 使用定义好的运算构建前向网络
         std = Tensor(np.sqrt(self.maturity), mindspore.float32) 
         drift = 0.5 * self.volatility ** 2 * self.maturity
@@ -43,9 +43,11 @@ if __name__ == '__main__':
     context.set_context(device_target="Ascend", device_id=7)
     
     start_ts = time.time()
-    r = EuroCallPrice(m, spot, volatility, strike, maturity)
+    model = EuroCallPrice(m, spot, volatility, strike, maturity)
+    result = model()
+    print(result)
     first = time.time()
 	# r = estimate_call_price_ms(m, spot, volatility, strike, maturity)
-	print(r)
+    result = model()
     
     print(time.time() - start_ts)
