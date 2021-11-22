@@ -30,14 +30,14 @@ class EuroCallPrice(nn.Cell):
         STs = ops.Mul()(Tensor(self.spot, mindspore.float32), ops.Exp()(ops.Add()(Tensor(-drift, mindspore.float32), ops.Mul()(Tensor(self.volatility, mindspore.float32), WTs))))
         payoffs = ops.Maximum()(Tensor(0.0, mindspore.float32), ops.Add()(STs, Tensor(-self.strike, mindspore.float32)))
         result = ops.ReduceMean(keep_dims=True)(payoffs)
-        
+
         return result
 
 
 def get_data(iter_num, data_size, mean, std):
     for _ in range(iter_num):
         data = np.random.normal(mean, std, (data_size, ))
-        yield (data.astype(np.float32), np.array([0.0]).astype(np.float32))
+        yield (data.astype(np.float32), )
 
 
 def create_dataset(iter_num, data_size, mean, std, repeat_size=1, batch_size=1):
@@ -63,12 +63,12 @@ if __name__ == '__main__':
     std = np.sqrt(maturity)
     context.set_context(device_target=args.device_target, device_id=args.device_id)
     x = np.random.normal(0.0, std, (m, ))
-    
+
     model = EuroCallPrice(m, spot, volatility, strike, maturity)
     syn_data = create_dataset(3, m, 0.0, std)
 
     for x in syn_data:
         start_ts = time.time()
-        result = model(x)
+        result = model(x[0])
         print(result)
         print(time.time() - start_ts)
