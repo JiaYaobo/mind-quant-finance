@@ -66,36 +66,3 @@ def option_price(volatilities: Tensor,
     undiscounted_puts = undiscounted_calls - undiscounted_forward
     return discount_factors * mnp.where(is_call_options, undiscounted_calls,
                                         undiscounted_puts)
-
-
-def test_option_prices():
-    """Tests that the BS prices are correct."""
-    forwards = mnp.array([1.0, 2.0, 3.0, 4.0, 5.0])
-    strikes = mnp.array([3.0, 3.0, 3.0, 3.0, 3.0])
-    volatilities = mnp.array([0.0001, 102.0, 2.0, 0.1, 0.4])
-    expiries = 1.0
-    computed_prices = option_price(
-        volatilities=volatilities,
-        strikes=strikes,
-        expiries=expiries,
-        forwards=forwards,
-        dtype=mindspore.float32)
-    expected_prices = mnp.array(
-        [0.0, 2.0, 2.0480684764112578, 1.0002029716043364, 2.0730313058959933])
-
-    isclose = mnp.isclose(computed_prices, expected_prices, 1e-6)
-    print(f"is correct {isclose}")
-
-
-if __name__ == '__main__':
-    import mindspore.context as context
-
-    context.set_context(mode=context.GRAPH_MODE, device_target="CPU",
-                        device_id=0, save_graphs=False)
-    import time
-    test_option_prices()
-
-    start = time.time()
-    test_option_prices()
-    end = time.time()
-    print(f"time {end - start}")
