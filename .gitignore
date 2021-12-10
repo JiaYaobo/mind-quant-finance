@@ -1,5 +1,6 @@
 # mindspore
 **/cuda_meta/
+**/kernel_meta/
 *.key
 *.log
 

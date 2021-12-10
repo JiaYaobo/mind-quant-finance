@@ -74,7 +74,7 @@ def test_sample_paths_1d(use_batch, supply_normal_draws, random_type):
     np.testing.assert_array_almost_equal(means, expected_means, decimal=2)
 
 
-def test_halton_sample_paths_2d():
+def test_halton_sample_paths_2d(random_type):
     """Tests path properties for 2-dimentional Ito process."""
     # We construct the following Ito processes.
     # dX_1 = mu_1 sqrt(t) dt + s11 dW_1 + s12 dW_2
@@ -101,6 +101,8 @@ def test_halton_sample_paths_2d():
         del x
         return (a * t + b) * P.Ones()((2, 2), t.dtype)
 
+    print(f"test_halton_sample_paths_2d {random_type}")
+
     start = time.time()
     paths = euler_sampling.sample(dim=2,
                                   drift_fn=drift_fn,
@@ -108,7 +110,7 @@ def test_halton_sample_paths_2d():
                                   times=times,
                                   num_samples=num_samples,
                                   initial_state=x0,
-                                  random_type=RandomType.PSEUDO,
+                                  random_type=random_type,
                                   time_step=0.01,
                                   seed=1,
                                   dtype=dtype)
@@ -122,7 +124,7 @@ def test_halton_sample_paths_2d():
                                   times=times,
                                   num_samples=num_samples,
                                   initial_state=x0,
-                                  random_type=RandomType.PSEUDO,
+                                  random_type=random_type,
                                   time_step=0.01,
                                   seed=1,
                                   dtype=dtype)
@@ -174,4 +176,4 @@ if __name__ == "__main__":
                          supply_normal_draws=False,
                          random_type=RandomType.PSEUDO_ANTITHETIC)
 
-    test_halton_sample_paths_2d()
+    test_halton_sample_paths_2d(random_type=RandomType.SOBOL)
