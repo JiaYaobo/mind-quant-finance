@@ -6,6 +6,7 @@ import mindspore
 import mindspore.ops as P
 import mindspore.numpy as mnp
 from mindspore import Tensor
+from mindspore import ms_function
 
 import random_sampler
 from random_sampler import RandomType
@@ -112,6 +113,7 @@ def _sample(dim,
             normal_draws = None
 
     result = current_state
+    
     for i in range(steps_num):
         result = _euler_step(i=i,
                              current_state=result,
@@ -128,7 +130,6 @@ def _sample(dim,
                              normal_draws=normal_draws)
 
     return result
-
 
 def _euler_step(i, current_state, drift_fn, volatility_fn, wiener_mean,
                 num_samples, times, dt, sqrt_dt, keep_mask, random_type, seed,

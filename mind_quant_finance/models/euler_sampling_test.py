@@ -74,7 +74,7 @@ def test_sample_paths_1d(use_batch, supply_normal_draws, random_type):
     np.testing.assert_array_almost_equal(means, expected_means, decimal=2)
 
 
-def test_halton_sample_paths_2d(random_type):
+def test_sample_paths_2d(random_type):
     """Tests path properties for 2-dimentional Ito process."""
     # We construct the following Ito processes.
     # dX_1 = mu_1 sqrt(t) dt + s11 dW_1 + s12 dW_2
@@ -83,8 +83,9 @@ def test_halton_sample_paths_2d(random_type):
     # s_ij = a_ij t + b_ij
     # For this process expected value at time t is (x_0)_i + 2/3 * mu_i * t^1.5.
     dtype = mindspore.float32
-    num_samples = 10000
-    times = 0.55
+    num_samples = 1000000
+    times = 1
+    time_step = 1
     x0 = np.array([0.1, -1.1])
     mu = np.array([0.2, 0.7])
     a = np.array([[0.4, 0.1], [0.3, 0.2]])
@@ -101,7 +102,7 @@ def test_halton_sample_paths_2d(random_type):
         del x
         return (a * t + b) * P.Ones()((2, 2), t.dtype)
 
-    print(f"test_halton_sample_paths_2d {random_type}")
+    print(f"test_sample_paths_2d {random_type}")
 
     start = time.time()
     paths = euler_sampling.sample(dim=2,
@@ -111,7 +112,7 @@ def test_halton_sample_paths_2d(random_type):
                                   num_samples=num_samples,
                                   initial_state=x0,
                                   random_type=random_type,
-                                  time_step=0.01,
+                                  time_step=time_step,
                                   seed=1,
                                   dtype=dtype)
     end = time.time()
@@ -125,7 +126,7 @@ def test_halton_sample_paths_2d(random_type):
                                   num_samples=num_samples,
                                   initial_state=x0,
                                   random_type=random_type,
-                                  time_step=0.01,
+                                  time_step=time_step,
                                   seed=1,
                                   dtype=dtype)
     end = time.time()
@@ -176,4 +177,6 @@ if __name__ == "__main__":
                          supply_normal_draws=False,
                          random_type=RandomType.PSEUDO_ANTITHETIC)
 
-    test_halton_sample_paths_2d(random_type=RandomType.SOBOL)
+    test_sample_paths_2d(random_type=RandomType.PSEUDO)
+
+    test_sample_paths_2d(random_type=RandomType.SOBOL)
