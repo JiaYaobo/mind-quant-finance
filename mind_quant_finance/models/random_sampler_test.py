@@ -273,10 +273,10 @@ if __name__ == "__main__":
 
     test_mean_and_scale_pseudo_antithetic()
 
-    test_batch_multivariate_normal_sobol()
+    # test_batch_multivariate_normal_sobol()
 
-    test_default_multivariate_normal_sobol()
+    # test_default_multivariate_normal_sobol()
 
-    test_mean_default_multivariate_normal_halton()
+    # test_mean_default_multivariate_normal_halton()
 
-    test_halton_numbers_generation()
+    # test_halton_numbers_generation()

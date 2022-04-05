@@ -3,17 +3,19 @@ import time
 
 import numpy as np
 import mindspore
-import mindspore.nn as nn
 from mindspore import Tensor
 
 import mindspore.ops as P
 from mindspore import context
+from mindspore import ms_function
 
-def normal(output_shape):
-    samples = P.normal(shape=output_shape,
-                       mean=Tensor(0.0, mindspore.float32),
-                       stddev=Tensor(1.0, mindspore.float32),
-                       seed=1234)
+@ms_function
+def normal(shape, mean, stddev):
+    stdnormal = P.StandardNormal(2, 3)
+    stdnormal.add_prim_attr("use_curand", True)
+    random_normal = stdnormal(shape)
+    value = random_normal * stddev + mean
+    return value
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='test normal performance')
@@ -29,16 +31,24 @@ if __name__ == '__main__':
                     save_graphs=False, enable_graph_kernel=True)
 
     start_ts = time.time()
-    normal((10000000, 2))
+    mean = Tensor(0.0, mindspore.float32)
+    stddev = Tensor(1.0, mindspore.float32)
+    normal((10000000, 2), mean, stddev)
     end_ts = time.time()
 
     print(f"#1 {end_ts - start_ts}")
 
     start_ts = time.time()
-    normal((10000000, 2))
+    normal((10000000, 2), mean, stddev)
     end_ts = time.time()
 
     print(f"#2 {end_ts - start_ts}")
+
+    # start_ts = time.time()
+    # normal((100000, 2), mean, stddev)
+    # end_ts = time.time()
+
+    # print(f"#3 {end_ts - start_ts}")
 
 
 

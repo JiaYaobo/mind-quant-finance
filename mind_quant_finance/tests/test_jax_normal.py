@@ -1,57 +1,64 @@
-import tensorflow as tf
+import numpy as np
+import jax
+import jax.numpy as jnp
+from jax import grad, jit, vmap
+from jax import random
+from jax import device_put
 import time
 
 def normal():
-    dtype=tf.float32
-    
-    x = tf.random.normal(shape=[10000, 20],
-                               dtype=dtype,
-                               mean=0.0, stddev=1.0,
-                               seed=1234)
-    samples = tf.matmul(x, tf.transpose(x))
+    dtype=jnp.float32
 
+    key = random.PRNGKey(1234)
+    x = random.normal(key=key, 
+        shape=[10000, 20],
+        dtype=dtype)
+
+    samples = jnp.matmul(x, x.T).block_until_ready()
+    
     return samples
 
-@tf.function
+@jit
 def xla_normal():
-    dtype=tf.float32
-    
-    x = tf.random.normal(shape=[10000, 20],
-                               dtype=dtype,
-                               mean=0.0, stddev=1.0,
-                               seed=1234)
-    samples = tf.matmul(x, tf.transpose(x))
+    dtype=jnp.float32
 
+    key = random.PRNGKey(1234)
+    x = random.normal(key=key, 
+        shape=[10000, 20],
+        dtype=dtype)
+
+    samples = jnp.matmul(x, x.T)
+    
     return samples
 
 
 if __name__ == '__main__':
     start_ts = time.time()
     s = normal()
-    # print(s[:1])
+    np.asarray(s)
     end_ts = time.time()
     print(f"noxla #1 {end_ts - start_ts}")
 
     start_ts = time.time()
     s = normal()
-    s.numpy()
+    np.asarray(s)
     end_ts = time.time()
     print(f"noxla #1 {end_ts - start_ts}")
 
     start_ts = time.time()
     s = normal()
-    s.numpy()
+    np.asarray(s)
     end_ts = time.time()
     print(f"noxla #2 {end_ts - start_ts}")
-    
+
     start_ts = time.time()
     s = xla_normal()
-    s.numpy()
+    np.asarray(s)
     end_ts = time.time()
     print(f"xla #1 {end_ts - start_ts}")
 
     start_ts = time.time()
     s = xla_normal()
-    s.numpy()
+    np.asarray(s)
     end_ts = time.time()
     print(f"xla #2 {end_ts - start_ts}")

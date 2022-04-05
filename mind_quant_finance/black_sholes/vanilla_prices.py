@@ -52,7 +52,7 @@ def option_price(volatilities: Tensor,
                                        nd.cdf(d1) - strikes * nd.cdf(d2),
                                        mnp.maximum(forwards - strikes, 0.0))
     else:  # normal model
-        d1 = mnp.divice((forwards - strikes), sqrt_var)
+        d1 = mnp.divide((forwards - strikes), sqrt_var)
         undiscounted_calls = mnp.where(
             sqrt_var > 0.0,
             (forwards - strikes) * nd.cdf(d1) + sqrt_var *

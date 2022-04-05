@@ -8,6 +8,7 @@ import numpy as np
 import mindspore
 import mindspore.ops as P
 import mindspore.numpy as mnp
+import mindspore.scipy as mscipy
 from mindspore import Tensor
 
 from ops import matvec
@@ -148,7 +149,7 @@ def multivariate_normal(sample_shape,
 def _process_mean_scale(mean, scale_matrix, covariance_matrix):
     """Extracts correct mean, scale, batch_shape, dimension, and dtype."""
     if scale_matrix is None and covariance_matrix is not None:
-        scale_matrix = np.linalg.cholesky(covariance_matrix)
+        scale_matrix = mscipy.linalg.cholesky(covariance_matrix)
     if mean is None:
         mean = 0.0
         # batch_shape includes the dimension of the samples
@@ -170,10 +171,20 @@ def _multivarivate_pseudo(sample_shape,
     (mean, scale_matrix, batch_shape,
      dim) = _process_mean_scale(mean, scale_matrix, covariance_matrix)
     output_shape = sample_shape + batch_shape
-    samples = P.normal(shape=output_shape,
-                       mean=Tensor(0.0, mindspore.float32),
-                       stddev=Tensor(1.0, mindspore.float32),
-                       seed=seed)
+    
+    stdnormal = P.StandardNormal()
+    stdnormal.add_prim_attr("use_curand", True)
+    random_normal = stdnormal(output_shape)
+    normal_mean = Tensor(0.0, mindspore.float32)
+    normal_stddev = Tensor(1.0, mindspore.float32)
+    samples = random_normal * normal_stddev + normal_mean
+    
+    # TODO
+    # before 1.6, there's a bug in normal ops, use code above to genernate normal numbers
+    # samples = P.normal(shape=output_shape,
+    #                    mean=Tensor(0.0, mindspore.float32),
+    #                    stddev=Tensor(1.0, mindspore.float32),
+    #                    seed=seed)
 
     if not isinstance(mean, Tensor):
         mean = Tensor(mean, dtype=dtype)
