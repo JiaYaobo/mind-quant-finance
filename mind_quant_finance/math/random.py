@@ -4,10 +4,10 @@ from functools import reduce
 from scipy import stats
 from scipy import special
 
-import numpy as np
+import numpy as onp
 import mindspore
 import mindspore.ops as P
-import mindspore.numpy as mnp
+import mindspore.numpy as np
 import mindspore.scipy as mscipy
 from mindspore import Tensor
 

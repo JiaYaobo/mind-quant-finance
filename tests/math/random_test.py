@@ -7,8 +7,8 @@ import mindspore.context as context
 from mindspore import Tensor
 from numpy import random
 
-import random_sampler
-from random_sampler import RandomType
+import mind_quant_finance.math.random as random_sampler
+from mind_quant_finance.math.random import RandomType
 
 
 def test_multivariate_normal_pesudo():
