@@ -10,7 +10,7 @@ from mindspore import ms_function
 
 import random_sampler
 from random_sampler import RandomType
-from ops import matvec
+from ..math.ops import matvec
 
 
 def sample(dim: int,

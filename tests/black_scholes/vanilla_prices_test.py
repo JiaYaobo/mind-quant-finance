@@ -10,23 +10,24 @@ import vanilla_prices
 
 def test_option_prices1():
     """Tests that the BS prices are correct."""
-    forwards = mnp.array([1.0, 2.0, 3.0, 4.0, 5.0])
-    strikes = mnp.array([3.0, 3.0, 3.0, 3.0, 3.0])
-    volatilities = mnp.array([0.0001, 102.0, 2.0, 0.1, 0.4])
+    dtype = mindspore.float32
+    forwards = mnp.array([1.0, 2.0, 3.0, 4.0, 5.0], dtype=dtype)
+    strikes = mnp.array([3.0, 3.0, 3.0, 3.0, 3.0], dtype=dtype)
+    volatilities = mnp.array([0.0001, 102.0, 2.0, 0.1, 0.4], dtype=dtype)
     expiries = 1.0
     computed_prices = vanilla_prices.option_price(
         volatilities=volatilities,
         strikes=strikes,
         expiries=expiries,
         forwards=forwards,
-        dtype=mindspore.float32,
+        dtype=dtype,
     )
     expected_prices = mnp.array(
-        [0.0, 2.0, 2.0480684764112578, 1.0002029716043364, 2.0730313058959933]
+        [0.0, 2.0, 2.0480684764112578, 1.0002029716043364, 2.0730313058959933], dtype=dtype
     )
 
-    isclose = mnp.isclose(computed_prices, expected_prices, 1e-5)
-    print(f"is correct {isclose}")
+    isclose = mnp.isclose(computed_prices, expected_prices, 1e-6)
+    return isclose
 
 
 def test_option_prices2():
@@ -66,11 +67,11 @@ if __name__ == "__main__":
     parser.add_argument(
         "--device_target",
         type=str,
-        default="Ascend",
+        default="GPU",
         help="set which type of device you want to use. Ascend/GPU",
     )
     parser.add_argument(
-        "--device_id", default=1, type=int, help="device id is for physical devices"
+        "--device_id", default=0, type=int, help="device id is for physical devices"
     )
     parser.add_argument(
         "--enable_graph_kernel",
