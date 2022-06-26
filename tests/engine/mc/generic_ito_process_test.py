@@ -47,11 +47,11 @@ def test_sample_paths_1d(use_batch):
         process = MCGenericltoProcess(1, drift_fn, vol_fn)
         # times = 0.55
         # num_paths = 200000
-        num_paths = 10000
-        T = 0.55
-        num_timesteps = 55
+        num_paths = 200000
+        T = 1.0
+        num_timesteps = 100
         dt = T / num_timesteps
-        times = Tensor([0.1, 0.21, 0.32, 0.43, 0.55])
+        times = Tensor([1.0])
     
         # normal_draws = P.StandardNormal()((1, num_paths // 2, num_timesteps, dim)).astype(dtype)
         # normal_draws = P.Concat(axis=1)([normal_draws, -normal_draws])
