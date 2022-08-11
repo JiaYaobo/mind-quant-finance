@@ -13,7 +13,7 @@ DESCRIPTION = 'AI Accelerated Quantative Finance Library'
 LONG_DESCRIPTION = (HERE / "README.md").read_text()
 LONG_DESC_TYPE = "text/markdown"
 
-INSTALL_REQUIRES = ['numpy', 'mindspore']
+INSTALL_REQUIRES = ['numpy']
 TESTS_REQUIRES = ['pytest']
 
 setup(
