@@ -2,12 +2,12 @@ import mindspore.numpy as np
 from mindspore import dtype as mstype
 
 
-def get_discount_rate_factor(discount_factors, discount_rates, shape,
+def get_discounted_rate_factor(discounted_factors, discounted_rates, shape,
                              expiries, dtype=mstype.float32):
     """Args:
-        discount_factors: A ms.Tensor with the same shape of der_price/ spot.
+        discounted_factors: A ms.Tensor with the same shape of der_price/ spot.
                          the discount factor of the der_price/spot. (e^{-rT})
-        discount_rates: A ms.Tensor with the same shape of der_price/spot.
+        discounted_rates: A ms.Tensor with the same shape of der_price/spot.
                        The discount rate of the der_price/spote. (r)
                        at most one of the factor/rate can be supplied.
                        if both are None, it means discount_rate = 1.0 (Default/No discount)
@@ -19,14 +19,14 @@ def get_discount_rate_factor(discount_factors, discount_rates, shape,
         the corresponding discount_factor / discount_rate 
         discount_factor = exp(- expiries * discount_rate).
     """
-    if (discount_rates is not None) and (discount_factors is not None):
+    if (discounted_rates is not None) and (discounted_factors is not None):
         raise ValueError('At most one of discount_rates and discount_factors may '
                          'be supplied')
-    elif (discount_factors is None) and (discount_rates is not None):
-        discount_factors = np.exp(-discount_rates * expiries)
-    elif (discount_rates is None) and (discount_factors is not None):
-        discount_rates = -np.log(discount_factors) / expiries
+    elif (discounted_factors is None) and (discounted_rates is not None):
+        discounted_factors = np.exp(-discounted_rates * expiries)
+    elif (discounted_rates is None) and (discounted_factors is not None):
+        discounted_rates = -np.log(discounted_factors) / expiries
     else:
-        discount_rates = np.zeros(shape, dtype=dtype)
-        discount_factors = np.ones(shape, dtype=dtype)
-    return discount_factors, discount_rates
+        discounted_rates = np.zeros(shape, dtype=dtype)
+        discounted_factors = np.ones(shape, dtype=dtype)
+    return discounted_factors, discounted_rates

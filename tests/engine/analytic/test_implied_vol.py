@@ -27,7 +27,7 @@ class Test_ImpliedVol:
                                                              strikes=strikes,
                                                              der_prices=prices,
                                                              spots=forwards,
-                                                             discount_factors=discounts,
+                                                             discounted_factors=discounts,
                                                              is_call_options=is_call_options,
                                                              initial_volatilities=init_vols,
                                                              max_iterations=100)
@@ -51,7 +51,7 @@ class Test_ImpliedVol:
                                                              strikes=strikes,
                                                              der_prices=prices,
                                                              spots=forwards,
-                                                             discount_factors=discounts,
+                                                             discounted_factors=discounts,
                                                              is_call_options=is_call_options,
                                                              max_iterations=100)
         assert np.logical_or(converged[:3].all(), converged[4:].all())
@@ -82,7 +82,7 @@ class Test_ImpliedVol:
                                strikes=strikes,
                                der_prices=prices,
                                spots=forwards,
-                               discount_factors=discounts,
+                               discounted_factors=discounts,
                                is_call_options=is_call_options,
                                underlying_distribution=ImpliedVolUnderlyingDistribution.Bachelier,
                                initial_volatilities=init_vols,
@@ -113,7 +113,7 @@ class Test_ImpliedVol:
                                strikes=strikes,
                                der_prices=prices,
                                spots=forwards,
-                               discount_factors=discounts,
+                               discounted_factors=discounts,
                                is_call_options=is_call_options,
                                underlying_distribution=ImpliedVolUnderlyingDistribution.Bachelier,
                                initial_volatilities=init_vols,
@@ -157,20 +157,19 @@ class Test_ImpliedVol:
 
         expiries = np.linspace(0.8, 1.2, num_examples, dtype=dtype)
         rates = np.linspace(0.03, 0.08, num_examples, dtype=dtype)
-        discount_factors = np.exp(-rates * expiries, dtype=dtype)
+        discounted_factors = np.exp(-rates * expiries, dtype=dtype)
         spots = np.ones(num_examples, dtype=dtype)
-        forwards = spots / discount_factors
+        forwards = spots / discounted_factors
         strikes = np.linspace(0.8, 1.2, num_examples, dtype=dtype)
         volatilities = np.ones_like(forwards, dtype=dtype)
         call_options = onp.random.binomial(n=1, p=0.5, size=num_examples)
         is_call_options = ms.Tensor(call_options, dtype=mstype.bool_)
-        solver = AnalyticBlackScholesMerton(dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(dtype=mstype.float32, is_call_options=is_call_options)
         prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=forwards,
-            volatilities=volatilities,
-            is_call_options=is_call_options
+            volatilities=volatilities
         )
         implied_vols, converged, failed = implied_vol_solver(expiries=expiries,
                                                              strikes=strikes,
@@ -187,19 +186,18 @@ class Test_ImpliedVol:
     def test_discount_factor_correctness(self):
         expiries = np.array([1.0], dtype=dtype)
         rates = np.array([0.05], dtype=dtype)
-        discount_factors = np.exp(-rates * expiries, dtype=dtype)
+        discounted_factors = np.exp(-rates * expiries, dtype=dtype)
         spots = np.array([1.0], dtype=dtype)
         strikes = np.array([0.9], dtype=dtype)
         volatilities = np.array([0.13], dtype=dtype)
         is_call_options = ms.Tensor(True)
-        solver = AnalyticBlackScholesMerton(dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(dtype=mstype.float32, is_call_options=is_call_options)
         prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=spots,
             volatilities=volatilities,
-            discount_rates=rates,
-            is_call_options=is_call_options
+            discounted_rates=rates
         )
 
         implied_vols, converged, failed = \
@@ -207,7 +205,7 @@ class Test_ImpliedVol:
                                strikes=strikes,
                                der_prices=prices,
                                spots=spots,
-                               discount_factors=discount_factors,
+                               discounted_factors=discounted_factors,
                                is_call_options=is_call_options,
                                max_iterations=100)
         assert converged.all()
@@ -228,7 +226,7 @@ class Test_ImpliedVol:
                                strikes=strikes,
                                der_prices=prices,
                                spots=forwards,
-                               discount_factors=discounts,
+                               discounted_factors=discounts,
                                is_call_options=is_call_options,
                                underlying_distribution=ImpliedVolUnderlyingDistribution.Bachelier,
                                max_iterations=100)

@@ -36,7 +36,7 @@ def _bsm_normal_option_price_solve(expiries, strikes, obj_prices, volatilities, 
 
 
 class AnalyticBlackScholesMerton(nn.Cell):
-    def __init__(self, is_normal_volatility: bool = False, dtype=mstype.float32):
+    def __init__(self, is_call_options=True, is_normal_volatility: bool = False, dtype=mstype.float32):
         """Args:
             is_normal_volatility: An optional Python boolean specifying whether the volatilities
                                   correspond to lognormal Black volatility (if False) or normal
@@ -49,25 +49,27 @@ class AnalyticBlackScholesMerton(nn.Cell):
         else:
             self.calc = _bsm_lognormal_option_price_solve
         self.dtype = dtype
+        self.is_call_options = is_call_options
 
     def construct(self, expiries, strikes, spots, volatilities,
-                  discount_rates=0, dividend_rates=0, is_call_options=True):
+                  discounted_rates=0, dividend_rates=0):
         """Args:
             expiries: The expiry of the options. ms.Tensor
             strikes: The strikes of the options. the ms.Tensor of any shape
             spots: The spots price of the underlying object. ms.Tensor
             volatilities: the volatilities of the options. ms.Tensor
-            discount_rates: ms.Tensor or float
-                            The discount rate of the der_price/spote. (r)
-                            discount_factor = exp(-expiries*discount_rate).
-                            if None, it means discount_rate = 1.0 (Default/No discount)
+            discounted_rates: ms.Tensor or float
+                            The discounted rate of the der_price/spote. (r)
+                            discounted_factor = exp(-expiries*discounted_rate).
+                            if None, it means discounted_rate = 1.0 (Default/No discount)
             dividend_rates: ms.Tensor or float
                             The dividend_rates q of the object, Default q=0
             is_call_options: A boolean ms.Tensor of a shape compatible with `prices`.
                              Indicates whether the option is a call (True) or a put (False).
                              If not supplied, call options are assumed.
         """
-        obj_prices = spots * np.exp((discount_rates - dividend_rates) * expiries)
-        forwards = self.calc(expiries, strikes, obj_prices, volatilities, is_call_options, self.dtype)
-        discount_factors = np.exp(-discount_rates * expiries)
-        return forwards * discount_factors
+        obj_prices = spots * np.exp((discounted_rates - dividend_rates) * expiries)
+        forwards = self.calc(expiries, strikes, obj_prices, volatilities, self.is_call_options, self.dtype)
+        discounted_factors = np.exp(-discounted_rates * expiries)
+        return forwards * discounted_factors
+
