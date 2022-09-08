@@ -36,13 +36,12 @@ class Test_BSMOptionPrice:
         expiries = ms.Tensor(1.0, dtype=dtype)
         is_call_options = np.array([True, True, False, False])
         expected_prices = np.array([0.0, 0.1, 0.1, 0.0], dtype=dtype)
-        solver = AnalyticBlackScholesMerton(dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(dtype=mstype.float32, is_call_options=is_call_options)
         computed_prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=forwards,
-            volatilities=volatilities,
-            is_call_options=is_call_options)
+            volatilities=volatilities)
         print(expected_prices)
         print(computed_prices)
         assert (np.abs(computed_prices - expected_prices) < 1e-6).all()
@@ -56,13 +55,12 @@ class Test_BSMOptionPrice:
         expiries = ms.Tensor(0.0, dtype=dtype)
         is_call_options = np.array([True, True, False, False])
         expected_prices = np.array([0.0, 0.1, 0.1, 0.0], dtype=dtype)
-        solver = AnalyticBlackScholesMerton(dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(dtype=mstype.float32, is_call_options=is_call_options)
         computed_prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=forwards,
-            volatilities=volatilities,
-            is_call_options=is_call_options)
+            volatilities=volatilities)
         print(expected_prices)
         print(computed_prices)
         assert (np.abs(computed_prices - expected_prices) < 1e-6).all()
@@ -91,13 +89,12 @@ class Test_BSMOptionPrice:
         volatilities = np.array([0.1, 0.2, 0.5, 0.9], dtype=dtype)
         expiries = ms.Tensor(1e10)
         expected_prices = strikes
-        solver = AnalyticBlackScholesMerton(dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(dtype=mstype.float32, is_call_options=False)
         computed_prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=forwards,
-            volatilities=volatilities,
-            is_call_options=False)
+            volatilities=volatilities)
         print(expected_prices)
         print(computed_prices)
         assert (np.abs(computed_prices - expected_prices) < 1e-6).all()
@@ -134,15 +131,14 @@ class Test_BSMOptionPrice:
         expiries = ms.Tensor(0.25, dtype=dtype)
         is_call_options = np.array([True] * 5 + [False] * 5)
         dividend_rates = ms.Tensor(0.12, dtype=dtype)
-        solver = AnalyticBlackScholesMerton(dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(dtype=mstype.float32, is_call_options=is_call_options)
         computed_prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=spots,
             volatilities=volatilities,
-            discount_rates=discount_rates,
-            dividend_rates=dividend_rates,
-            is_call_options=is_call_options)
+            discounted_rates=discount_rates,
+            dividend_rates=dividend_rates)
         expected_prices = np.array(
             [0.03, 0.57, 3.42, 9.85, 18.62, 20.41, 11.25, 4.40, 1.12, 0.18])
         print(expected_prices)
@@ -159,13 +155,12 @@ class Test_BSMOptionPrice:
         expected_prices = np.array([
             0.3989423, 0.0833155, 0.3989423, 0.1977966, 0.2820948, 0.5641896
         ], dtype=dtype)
-        solver = AnalyticBlackScholesMerton(is_normal_volatility=True, dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(is_normal_volatility=True, dtype=mstype.float32, is_call_options=is_call_options)
         computed_prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=forwards,
-            volatilities=volatilities,
-            is_call_options=is_call_options)
+            volatilities=volatilities)
         print(expected_prices)
         print(computed_prices)
         assert (np.abs(computed_prices - expected_prices) < 1e-6).all()
@@ -181,13 +176,12 @@ class Test_BSMOptionPrice:
             0.0084907, 0.0833155, 0.3989423, 0.5641896, 0.2820948, 0.3989423,
             0.6977965
         ], dtype=dtype)
-        solver = AnalyticBlackScholesMerton(is_normal_volatility=True, dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(is_normal_volatility=True, dtype=mstype.float32, is_call_options=is_call_options)
         computed_prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=forwards,
-            volatilities=volatilities,
-            is_call_options=is_call_options)
+            volatilities=volatilities)
         print(expected_prices)
         print(computed_prices)
         assert (np.abs(computed_prices - expected_prices) < 1e-6).all()
@@ -202,13 +196,12 @@ class Test_BSMOptionPrice:
         expected_prices = np.array([
             0.3989423, 0.3989423, 0.5641896, 0.3989423, 0.3989423, 0.5641896
         ], dtype=dtype)
-        solver = AnalyticBlackScholesMerton(is_normal_volatility=True, dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(is_normal_volatility=True, dtype=mstype.float32, is_call_options=is_call_options)
         computed_prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=forwards,
-            volatilities=volatilities,
-            is_call_options=is_call_options)
+            volatilities=volatilities)
         print(expected_prices)
         print(computed_prices)
         assert (np.abs(computed_prices - expected_prices) < 1e-6).all()
@@ -221,13 +214,12 @@ class Test_BSMOptionPrice:
         is_call_options = np.array([True])
         volatilities = np.array([0.01])
         expected_prices = np.array([0.002820947917738782])
-        solver = AnalyticBlackScholesMerton(is_normal_volatility=True, dtype=mstype.float32)
+        solver = AnalyticBlackScholesMerton(is_normal_volatility=True, dtype=mstype.float32, is_call_options=is_call_options)
         computed_prices = solver(
             expiries=expiries,
             strikes=strikes,
             spots=forwards,
-            volatilities=volatilities,
-            is_call_options=is_call_options)
+            volatilities=volatilities)
         print(expected_prices)
         print(computed_prices)
         assert (np.abs(computed_prices - expected_prices) < 1e-6).all()

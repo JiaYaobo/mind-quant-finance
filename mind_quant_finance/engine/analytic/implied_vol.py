@@ -6,7 +6,7 @@ from mind_quant_finance.math.distribution import standnormal_pdf, standnormal_cd
 from mindspore import ms_function
 import enum
 from mind_quant_finance.math.root_search import newton
-from mind_quant_finance.utils.rate_factor import get_discount_rate_factor
+from mind_quant_finance.utils.rate_factor import get_discounted_rate_factor
 
 
 @enum.unique
@@ -20,8 +20,8 @@ class ImpliedVolUnderlyingDistribution(enum.Enum):
 
 
 def implied_vol_solver(expiries, strikes, der_prices, spots,
-                       discount_factors=None,
-                       discount_rates=None,
+                       discounted_factors=None,
+                       discounted_rates=None,
                        is_call_options=None,
                        underlying_distribution=ImpliedVolUnderlyingDistribution.BSM,
                        initial_volatilities=None,
@@ -34,9 +34,9 @@ def implied_vol_solver(expiries, strikes, der_prices, spots,
         strikes: The strikes of the options.
         der_prices: The current price of the options.
         spots: The spot of the underlying product.
-        discount_factors: A ms.Tensor with the same shape of der_price/ spot.
+        discounted_factors: A ms.Tensor with the same shape of der_price/ spot.
                          the discount factor of the der_price/spot. (e^{-rT})
-        discount_rates: A ms.Tensor with the same shape of der_price/spot.
+        discounted_rates: A ms.Tensor with the same shape of der_price/spot.
                        The discount rate of the der_price/spote. (r)
                        discount_factor = exp(-expiries*discount_rate).
                        at most one of the factor/rate can be supplied.
@@ -62,11 +62,11 @@ def implied_vol_solver(expiries, strikes, der_prices, spots,
                     not fail but also not converged, need to increase the max_iterations
                     to get the needy tolerance / accuracy
     """
-    discount_factors, discount_rates = \
-        get_discount_rate_factor(discount_factors, discount_rates, der_prices.shape,
+    discounted_factors, discounted_rates = \
+        get_discounted_rate_factor(discounted_factors, discounted_rates, der_prices.shape,
                                  expiries, dtype)
-    der_prices = der_prices / discount_factors
-    obj_prices = spots / discount_factors
+    der_prices = der_prices / discounted_factors
+    obj_prices = spots / discounted_factors
     if initial_volatilities is None:
         initial_volatilities = der_prices * np.sqrt(2.0 * np.pi)
     if is_call_options is None:
@@ -82,10 +82,10 @@ def implied_vol_solver(expiries, strikes, der_prices, spots,
     strikes = strikes / normalization
     if underlying_distribution is ImpliedVolUnderlyingDistribution.BSM:
         func_cell = bsm_lognormal_vega_func(strikes, der_prices, obj_prices,
-                                            expiries, discount_factors, is_call_options, dtype)
+                                            expiries, discounted_factors, is_call_options, dtype)
     elif underlying_distribution is ImpliedVolUnderlyingDistribution.Bachelier:
         func_cell = bachelier_normal_vega_func(strikes, der_prices, obj_prices,
-                                               expiries, discount_factors, is_call_options,
+                                               expiries, discounted_factors, is_call_options,
                                                normalization, dtype)
     else:
         raise AttributeError("The Underlying Distribution of ImpliedVol is not Supported.")
@@ -96,7 +96,7 @@ def implied_vol_solver(expiries, strikes, der_prices, spots,
 
 
 def bsm_lognormal_vega_func(strikes, der_prices, obj_prices,
-                            expiries, discount_factors, is_call_options, dtype):
+                            expiries, discounted_factors, is_call_options, dtype):
     lnf = np.log(obj_prices) - np.log(strikes)
     sqrt_t = np.sqrt(expiries)
 
@@ -108,7 +108,7 @@ def bsm_lognormal_vega_func(strikes, der_prices, obj_prices,
         implied_call = obj_prices * standnormal_cdf(d1) - strikes * standnormal_cdf(d2)
         implied_put = implied_call - obj_prices + strikes
         implied_prices = np.where(is_call_options, implied_call, implied_put)
-        vega = obj_prices * standnormal_pdf(d1) * sqrt_t / discount_factors
+        vega = obj_prices * standnormal_pdf(d1) * sqrt_t / discounted_factors
         return implied_prices - der_prices, vega
 
     return val_vega_func
@@ -116,7 +116,7 @@ def bsm_lognormal_vega_func(strikes, der_prices, obj_prices,
 
 # Ref: https://optionsformulas.com/pages/bachelier-with-drift-delta-gamma-and-vega-derivation.html
 def bachelier_normal_vega_func(strikes, der_prices, obj_prices, expiries,
-                               discount_factors, is_call_options, normalization, dtype):
+                               discounted_factors, is_call_options, normalization, dtype):
     sqrt_t = np.sqrt(expiries)
 
     @ms_function
@@ -126,7 +126,8 @@ def bachelier_normal_vega_func(strikes, der_prices, obj_prices, expiries,
         implied_call = (obj_prices - strikes) * standnormal_cdf(d1) + vol_t * standnormal_pdf(d1)
         implied_put = implied_call - obj_prices + strikes
         implied_price = np.where(is_call_options, implied_call, implied_put)
-        vega = sqrt_t * standnormal_pdf(d1) / discount_factors / normalization
+        vega = sqrt_t * standnormal_pdf(d1) / discounted_factors / normalization
         return implied_price - der_prices, vega
 
     return val_vega_func
+
