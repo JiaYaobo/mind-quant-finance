@@ -26,17 +26,18 @@ class MLP(nn.Cell):
         depth: int,
         activation: Callable = nn.ReLU(),
         final_activation: Callable = _identity,
+        has_bias=False
     ):
 
         super().__init__()
         layers = []
         if depth == 0:
-            layers.append(Dense(in_size, out_size))
+            layers.append(Dense(in_size, out_size, has_bias=has_bias))
         else:
-            layers.append(Dense(in_size, width_size))
+            layers.append(Dense(in_size, width_size, has_bias=has_bias))
             for i in range(depth - 1):
-                layers.append(Dense(in_size, width_size))
-            layers.append(Dense(width_size, out_size))
+                layers.append(Dense(width_size, width_size, has_bias=has_bias))
+            layers.append(Dense(width_size, out_size, has_bias=has_bias))
         self.layers = layers
         self.in_size = in_size
         self.out_size = out_size
