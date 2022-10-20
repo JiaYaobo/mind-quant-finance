@@ -1,4 +1,4 @@
-from mindspore.nn.layer import Dense
+from mindspore.nn.layer import Dense, CellList
 from mindspore import Tensor
 import mindspore.nn as nn
 import mindspore.ops as P
@@ -12,7 +12,7 @@ def _identity(x: Tensor):
     return x 
 
 class MLP(nn.Cell):
-    layers: List[Dense]
+    layers: CellList
     activation: Callable
     final_activation: Callable
     depth: int
@@ -30,7 +30,7 @@ class MLP(nn.Cell):
     ):
 
         super().__init__()
-        layers = []
+        layers = CellList()
         if depth == 0:
             layers.append(Dense(in_size, out_size, has_bias=has_bias))
         else:
