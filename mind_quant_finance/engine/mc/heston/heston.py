@@ -1,24 +1,64 @@
+# Copyright 2019 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ============================================================================
+"""
+In finance, the Heston model, named after Steven L. Heston, 
+is a mathematical model that describes the evolution of the volatility of an underlying asset.
+It is a stochastic volatility model: such a model assumes that the volatility of the asset is not constant, nor even deterministic, but follows a random process.
+"""
+
 import mindspore.numpy as mnp
 import mindspore.ops as P
-from mind_quant_finance.math import piecewise
 import mindspore.nn as nn
 
+from mind_quant_finance.math import piecewise
+
+__all__ = [
+    "HestonModel",
+    ]
 
 class HestonModel(nn.Cell):
-    
+    """
+    Monte Carlo Simulation For Heston Model
+
+    .. math::
+       y_i = x_i / (1 + e^{-beta * x_i})
+
+
+    Args:
+        mean_reversion (Scalar | Callable): mean version parameter for heston model
+        theta (Scalar | Callable): long variance parameter for heston model
+        volvol (Scalar | Callable): vol of vol parameter for heston model
+        rho (Scalar | Callable): correlation parameter fro heston model
+        dtype (mindspore.dtype): data type of the model
+
+    Returns:
+        mindspre.Tensor, path of log spot and variance drift
+
+    """
     def __init__(self, mean_reversion, theta, volvol, rho, dtype):
-        
+
         super(HestonModel, self).__init__()
-        
+
         self._dtype = dtype or mnp.float32
         self._dim = 2
-        
+
         if isinstance(mean_reversion, piecewise.PiecewiseConstantFunction):
             self._mean_reversion = mean_reversion
         else:
             self._mean_reversion = mnp.asarray(
                 mean_reversion, dtype=self._dtype)
-        
 
         if isinstance(theta, piecewise.PiecewiseConstantFunction):
             self._theta = theta
@@ -58,23 +98,21 @@ class HestonModel(nn.Cell):
             var_drift = mean_reversion * (theta - var)
             drift = mnp.stack([log_spot_drift, var_drift], -1)
             return drift
-        
+
         self._drift_fn = _drift_fn
         self._vol_fn = _vol_fn
-        
+
     def construct(self,
                   initial_state,
                   num_timesteps,
                   num_paths=1,
-                  seed=None,
                   tolerance=1e-6,
                   times=None):
-
 
         times = mnp.asarray(times, dtype=self._dtype)
 
         normal_draws = mnp.randn(
-            (num_timesteps, num_paths, self._dim), dtype=self._dtype)  # 365 x paths x 2
+            (num_timesteps, num_paths, self._dim), dtype=self._dtype) 
 
         current_log_spot = (
             mnp.asarray(initial_state[..., 0], dtype=self._dtype) *
@@ -144,6 +182,7 @@ class HestonModel(nn.Cell):
     def _update_variance(
             self,
             mean_reversion, theta, volvol, rho, current_vol, time_step, normals, psi_c=1.5):
+            
         psi_c = mnp.asarray(psi_c, dtype=mean_reversion.dtype)
         scaled_time = mnp.exp(-mean_reversion * time_step)
         volvol_squared = volvol ** 2

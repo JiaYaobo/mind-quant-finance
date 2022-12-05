@@ -1,12 +1,13 @@
-from statistics import mean
-import numpy as np
-from mind_quant_finance.engine.mc.heston import HestonModel
-import mindspore.numpy as mnp
+import argparse
 import time
+
+import numpy as np
+import mindspore.numpy as mnp
 from mindspore import Tensor
 from mindspore import context
-import argparse
+
 from mind_quant_finance.math import piecewise
+from mind_quant_finance.engine.mc.heston import HestonModel
 
 
 def test_constant_parameters_heston():
@@ -32,7 +33,7 @@ def test_constant_parameters_heston():
 
 
 def test_function_parameters_heston():
-    
+
     seed = 1
     dtype = mnp.float32
     mean_reversion = piecewise.PiecewiseConstantFunction(
