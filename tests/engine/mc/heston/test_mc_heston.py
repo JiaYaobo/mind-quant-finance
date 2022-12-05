@@ -1,5 +1,22 @@
-import argparse
-import time
+# Copyright 2019 Huawei Technologies Co., Ltd
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ============================================================================
+"""
+test monte carlo simulation for heston model
+"""
+
+import pytest
 
 import numpy as np
 import mindspore.numpy as mnp
@@ -10,10 +27,12 @@ from mind_quant_finance.math import piecewise
 from mind_quant_finance.engine.mc.heston import HestonModel
 
 
+context.set_context(mode=context.GRAPH_MODE, device_target="CPU")
+
+@pytest.mark.level0
 def test_constant_parameters_heston():
 
     dtype = mnp.float32
-    seed = 1
     theta = 0.5
     process = HestonModel(mean_reversion=1.0, theta=theta,
                           volvol=1.0, rho=-0.0, dtype=dtype)
@@ -25,16 +44,15 @@ def test_constant_parameters_heston():
         initial_state=Tensor(np.array([np.log(100), 0.45])),
         num_timesteps=len(times),
         num_paths=num_paths,
-        seed=seed,
         times=times
     )
 
-    return paths
+    assert paths.shape == (2, 9, 3)
 
 
+@pytest.mark.level0
 def test_function_parameters_heston():
 
-    seed = 1
     dtype = mnp.float32
     mean_reversion = piecewise.PiecewiseConstantFunction(
         jump_locations=[0.5], values=[1, 1.1], dtype=dtype)
@@ -53,44 +71,8 @@ def test_function_parameters_heston():
         initial_state=Tensor(np.array([np.log(100), 0.45])),
         num_timesteps=len(times),
         num_paths=num_paths,
-        seed=seed,
         times=times
     )
 
-    return paths
+    assert paths.shape == (2, 9, 3)
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="mc heson test")
-    parser.add_argument(
-        "--device_target",
-        type=str,
-        default="GPU",
-        help="set which type of device you want to use. Ascend/GPU",
-    )
-    parser.add_argument(
-        "--device_id", default=0, type=int, help="device id is for physical devices"
-    )
-    parser.add_argument(
-        "--enable_graph_kernel",
-        action='store_true',
-        help="whether to use graph kernel",
-    )
-    args = parser.parse_args()
-
-    context.set_context(
-        mode=context.GRAPH_MODE,
-        device_target=args.device_target,
-        device_id=args.device_id,
-        save_graphs=False,
-        enable_graph_kernel=args.enable_graph_kernel,
-    )
-    start = time.time()
-    print(test_constant_parameters_heston())
-    end = time.time()
-    print(f"#1 time {end - start}")
-
-    start = time.time()
-    print(test_function_parameters_heston())
-    end = time.time()
-    print(f"#2 time {end - start}")
